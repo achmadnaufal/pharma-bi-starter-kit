@@ -1,44 +1,205 @@
 """
-Starter kit for pharma BI analysts with templates, SQL queries, and best practices
+Starter kit for pharma BI analysts with templates, SQL queries, and best practices.
+
+Provides reusable analysis components for pharmaceutical business intelligence:
+sales force effectiveness (SFE), sales rep performance, territory analysis,
+and KPI reporting aligned with common pharma BI frameworks.
 
 Author: github.com/achmadnaufal
 """
 import pandas as pd
 import numpy as np
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 
 class PharmaBIStarterKit:
-    """Pharma BI analyst starter kit"""
+    """
+    Pharma BI analyst starter kit.
+
+    Provides ready-to-use components for common pharma BI use cases:
+    rep performance, territory KPIs, target attainment, and call activity analysis.
+
+    Args:
+        config: Optional dict with keys:
+            - target_attainment_threshold: % for "on-target" classification (default 80)
+            - top_performers_pct: Top performer percentile (default 20)
+
+    Example:
+        >>> kit = PharmaBIStarterKit(config={"target_attainment_threshold": 80})
+        >>> df = kit.load_data("data/rep_sales.csv")
+        >>> report = kit.sales_performance_report(df)
+        >>> print(report["top_performers"])
+    """
 
     def __init__(self, config: Optional[Dict] = None):
         self.config = config or {}
+        self.target_threshold = self.config.get("target_attainment_threshold", 80.0)
+        self.top_pct = self.config.get("top_performers_pct", 20.0)
 
     def load_data(self, filepath: str) -> pd.DataFrame:
-        """Load data from CSV or Excel file."""
+        """
+        Load sales rep data from CSV or Excel.
+
+        Args:
+            filepath: Path to file. Expected columns: rep_id, territory,
+                      actual_sales, target_sales, call_count, period.
+
+        Returns:
+            DataFrame with rep performance data.
+
+        Raises:
+            FileNotFoundError: If file does not exist.
+        """
         p = Path(filepath)
+        if not p.exists():
+            raise FileNotFoundError(f"Data file not found: {filepath}")
         if p.suffix in (".xlsx", ".xls"):
             return pd.read_excel(filepath)
         return pd.read_csv(filepath)
 
     def validate(self, df: pd.DataFrame) -> bool:
-        """Basic validation of input data."""
+        """
+        Validate rep performance data.
+
+        Args:
+            df: DataFrame to validate.
+
+        Returns:
+            True if valid.
+
+        Raises:
+            ValueError: If empty or missing required columns.
+        """
         if df.empty:
             raise ValueError("Input DataFrame is empty")
+        df_cols = [c.lower().strip().replace(" ", "_") for c in df.columns]
+        required = ["rep_id", "actual_sales", "target_sales"]
+        missing = [c for c in required if c not in df_cols]
+        if missing:
+            raise ValueError(f"Missing required columns: {missing}")
         return True
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Clean and preprocess input data."""
+        """Normalize column names and fill missing values."""
         df = df.copy()
-        # Drop fully empty rows
         df.dropna(how="all", inplace=True)
-        # Standardize column names
         df.columns = [c.lower().strip().replace(" ", "_") for c in df.columns]
+        num_cols = df.select_dtypes(include="number").columns
+        for col in num_cols:
+            if df[col].isnull().any():
+                df[col].fillna(df[col].median(), inplace=True)
         return df
 
+    def sales_performance_report(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Generate sales rep performance KPI report.
+
+        Calculates target attainment %, performance tier (top/on-track/below),
+        call-to-sales efficiency, and territory ranking.
+
+        Args:
+            df: Rep performance DataFrame with rep_id, actual_sales,
+                target_sales, and optionally call_count, territory.
+
+        Returns:
+            Dict with:
+                - rep_summary: DataFrame with per-rep KPIs
+                - top_performers: List of top performers (top N%)
+                - below_target: Reps below attainment threshold
+                - team_attainment_pct: Team-level target attainment
+                - total_actual_vs_target: {actual, target, gap}
+
+        Raises:
+            ValueError: If required columns missing.
+        """
+        df = self.preprocess(df)
+        required = ["rep_id", "actual_sales", "target_sales"]
+        missing = [c for c in required if c not in df.columns]
+        if missing:
+            raise ValueError(f"Missing columns: {missing}")
+
+        if (df["target_sales"] <= 0).any():
+            df.loc[df["target_sales"] <= 0, "target_sales"] = 1  # avoid div by zero
+
+        agg_cols = ["rep_id"] + (["territory"] if "territory" in df.columns else [])
+        rep_agg = df.groupby(agg_cols).agg(
+            actual_sales=("actual_sales", "sum"),
+            target_sales=("target_sales", "sum"),
+        )
+        if "call_count" in df.columns:
+            rep_agg["call_count"] = df.groupby(agg_cols)["call_count"].sum()
+        rep_agg = rep_agg.reset_index()
+
+        rep_agg["attainment_pct"] = (
+            rep_agg["actual_sales"] / rep_agg["target_sales"] * 100
+        ).round(2)
+
+        top_threshold = rep_agg["attainment_pct"].quantile(1 - self.top_pct / 100)
+        rep_agg["performance_tier"] = pd.cut(
+            rep_agg["attainment_pct"],
+            bins=[-np.inf, self.target_threshold, top_threshold, np.inf],
+            labels=["Below Target", "On Track", "Top Performer"],
+        ).astype(str)
+
+        if "call_count" in rep_agg.columns:
+            rep_agg["sales_per_call"] = (
+                rep_agg["actual_sales"] / rep_agg["call_count"].replace(0, np.nan)
+            ).round(2)
+
+        rep_agg["rank"] = rep_agg["attainment_pct"].rank(ascending=False, method="min").astype(int)
+        rep_agg = rep_agg.sort_values("rank")
+
+        team_attainment = float(
+            rep_agg["actual_sales"].sum() / rep_agg["target_sales"].sum() * 100
+        )
+        top_performers = rep_agg[rep_agg["performance_tier"] == "Top Performer"]["rep_id"].tolist()
+        below_target = rep_agg[rep_agg["attainment_pct"] < self.target_threshold]["rep_id"].tolist()
+
+        return {
+            "rep_summary": rep_agg,
+            "top_performers": top_performers,
+            "below_target": below_target,
+            "team_attainment_pct": round(team_attainment, 2),
+            "total_actual_vs_target": {
+                "actual": round(rep_agg["actual_sales"].sum(), 2),
+                "target": round(rep_agg["target_sales"].sum(), 2),
+                "gap": round(rep_agg["target_sales"].sum() - rep_agg["actual_sales"].sum(), 2),
+            },
+        }
+
+    def territory_heatmap_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Aggregate performance metrics by territory for heatmap visualization.
+
+        Args:
+            df: Rep performance DataFrame with territory column.
+
+        Returns:
+            DataFrame with territory-level KPIs: total sales, attainment %,
+            rep count, avg call count.
+
+        Raises:
+            ValueError: If territory column not present.
+        """
+        df = self.preprocess(df)
+        if "territory" not in df.columns:
+            raise ValueError("Column 'territory' required for territory heatmap")
+
+        agg = df.groupby("territory").agg(
+            total_actual=("actual_sales", "sum"),
+            total_target=("target_sales", "sum"),
+            rep_count=("rep_id", "nunique"),
+        )
+        if "call_count" in df.columns:
+            agg["avg_calls"] = df.groupby("territory")["call_count"].mean().round(1)
+        agg["territory_attainment_pct"] = (
+            agg["total_actual"] / agg["total_target"] * 100
+        ).round(2)
+        return agg.reset_index().sort_values("territory_attainment_pct", ascending=False)
+
     def analyze(self, df: pd.DataFrame) -> Dict[str, Any]:
-        """Run core analysis and return summary metrics."""
+        """Run descriptive analysis and return summary metrics."""
         df = self.preprocess(df)
         result = {
             "total_records": len(df),
@@ -59,7 +220,7 @@ class PharmaBIStarterKit:
         return self.analyze(df)
 
     def to_dataframe(self, result: Dict) -> pd.DataFrame:
-        """Convert analysis result to DataFrame for export."""
+        """Convert result dict to flat DataFrame for export."""
         rows = []
         for k, v in result.items():
             if isinstance(v, dict):
