@@ -229,3 +229,103 @@ class PharmaBIStarterKit:
             else:
                 rows.append({"metric": k, "value": v})
         return pd.DataFrame(rows)
+
+
+    def territory_performance_matrix(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Build a territory performance matrix with attainment, call efficiency,
+        and opportunity score for sales force effectiveness (SFE) analysis.
+
+        Performance matrix quadrants (based on attainment and call efficiency):
+            - Star: high attainment + high call efficiency
+            - Underperformer: low attainment + high calls (low conversion)
+            - Efficient: high attainment + low calls (high conversion)
+            - At Risk: low attainment + low calls
+
+        Args:
+            df: Sales DataFrame with rep_id, territory, actual_sales,
+                target_sales, and call_count columns.
+
+        Returns:
+            DataFrame with territory, attainment_pct, calls_per_sale,
+            quadrant label, and opportunity_score.
+
+        Raises:
+            ValueError: If required columns are missing.
+        """
+        df = self.preprocess(df)
+        required = ["actual_sales", "target_sales", "call_count"]
+        missing = [c for c in required if c not in df.columns]
+        if missing:
+            raise ValueError(f"Missing columns for territory matrix: {missing}")
+
+        group_col = "territory" if "territory" in df.columns else "rep_id" if "rep_id" in df.columns else None
+        if group_col is None:
+            raise ValueError("Need 'territory' or 'rep_id' column for grouping")
+
+        agg = df.groupby(group_col).agg(
+            total_actual=("actual_sales", "sum"),
+            total_target=("target_sales", "sum"),
+            total_calls=("call_count", "sum"),
+        ).reset_index()
+
+        agg["attainment_pct"] = (agg["total_actual"] / agg["total_target"].replace(0, np.nan) * 100).round(2)
+        agg["calls_per_sale"] = (agg["total_calls"] / agg["total_actual"].replace(0, np.nan)).round(3)
+
+        att_median = agg["attainment_pct"].median()
+        cps_median = agg["calls_per_sale"].median()
+
+        def quadrant(row: pd.Series) -> str:
+            """Assign SFE quadrant based on attainment and call efficiency."""
+            high_att = row["attainment_pct"] >= att_median
+            low_cps = row["calls_per_sale"] <= cps_median  # lower calls_per_sale = more efficient
+            if high_att and low_cps:
+                return "Star"
+            if high_att and not low_cps:
+                return "Underperformer"
+            if not high_att and low_cps:
+                return "Efficient"
+            return "At Risk"
+
+        agg["quadrant"] = agg.apply(quadrant, axis=1)
+        agg["opportunity_score"] = (
+            (agg["attainment_pct"] / 100).clip(0, 2) * 0.6
+            + (1 / agg["calls_per_sale"].replace(0, np.nan)).fillna(0).clip(0, 1) * 0.4
+        ).round(3)
+
+        return agg.sort_values("attainment_pct", ascending=False).reset_index(drop=True)
+
+    def kpi_summary_card(self, df: pd.DataFrame) -> Dict[str, Any]:
+        """
+        Generate a KPI summary card for pharma BI dashboard display.
+
+        Returns top-line metrics suitable for a Power BI card visual or
+        Streamlit metric widget.
+
+        Args:
+            df: Sales DataFrame.
+
+        Returns:
+            Dict with keys: total_actual_sales, total_target_sales,
+            overall_attainment_pct, reps_on_target, reps_at_risk, periods_covered.
+        """
+        df = self.preprocess(df)
+        result: Dict[str, Any] = {}
+        if "actual_sales" in df.columns:
+            result["total_actual_sales"] = round(float(df["actual_sales"].sum()), 2)
+        if "target_sales" in df.columns:
+            result["total_target_sales"] = round(float(df["target_sales"].sum()), 2)
+        if "actual_sales" in df.columns and "target_sales" in df.columns:
+            tot = float(df["target_sales"].sum())
+            result["overall_attainment_pct"] = round(
+                float(df["actual_sales"].sum()) / tot * 100 if tot > 0 else 0, 2
+            )
+            if "rep_id" in df.columns:
+                rep_att = df.groupby("rep_id").apply(
+                    lambda g: g["actual_sales"].sum() / max(g["target_sales"].sum(), 1) * 100
+                )
+                result["reps_on_target"] = int((rep_att >= self.target_threshold).sum())
+                result["reps_at_risk"] = int((rep_att < self.target_threshold).sum())
+        if "period" in df.columns:
+            result["periods_covered"] = df["period"].nunique()
+        return result
