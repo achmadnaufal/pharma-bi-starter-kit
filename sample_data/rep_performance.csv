@@ -1,0 +1,11 @@
+rep_id,rep_name,territory,manager,actual_sales,target_sales,call_count,period
+REP01,Ahmad Rizki,Jakarta North,MGR001,145000,150000,62,2026-Q1
+REP02,Budi Santoso,Jakarta South,MGR001,132000,150000,55,2026-Q1
+REP03,Citra Dewi,Bandung,MGR002,118000,130000,48,2026-Q1
+REP04,Doni Pratama,Surabaya North,MGR002,168000,150000,70,2026-Q1
+REP05,Eka Putri,Surabaya South,MGR003,89000,120000,38,2026-Q1
+REP06,Fajar Nugroho,Semarang,MGR003,125000,130000,52,2026-Q1
+REP07,Gita Amalia,Medan,MGR004,102000,120000,44,2026-Q1
+REP08,Hendra Wijaya,Makassar,MGR004,78000,100000,32,2026-Q1
+REP09,Indra Kusuma,Bali,MGR005,142000,140000,58,2026-Q1
+REP10,Joko Purnomo,Yogyakarta,MGR005,96000,110000,42,2026-Q1

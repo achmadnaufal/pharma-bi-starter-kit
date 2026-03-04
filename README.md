@@ -1,52 +1,45 @@
-# Pharma Bi Starter Kit
+# Pharma BI Starter Kit
 
-Starter kit for pharma BI analysts with templates, SQL queries, and best practices
+Ready-to-use components for pharmaceutical business intelligence: sales rep performance,
+territory KPIs, and SFE (Sales Force Effectiveness) analysis.
+
+## Domain Context
+
+Pharma BI analysts spend significant time on rep performance reporting. This kit provides
+standardized KPI calculations aligned with common pharma BI frameworks used alongside
+tools like IQVIA, Veeva CRM, and Power BI.
 
 ## Features
-- Data ingestion from CSV/Excel input files
-- Automated analysis and KPI calculation
-- Summary statistics and trend reporting
-- Sample data generator for testing and development
-
-## Installation
-
-```bash
-pip install -r requirements.txt
-```
+- **Rep performance report**: attainment %, performance tier, rank, calls-per-sale
+- **Territory heatmap data**: territory-level aggregation for geographic visualization
+- **10-rep sample data**: Indonesian pharma market with realistic names and territories
+- **Configurable thresholds**: top performer %, target attainment cutoff
 
 ## Quick Start
 
 ```python
 from src.main import PharmaBIStarterKit
 
-analyzer = PharmaBIStarterKit()
-df = analyzer.load_data("data/sample.csv")
-result = analyzer.analyze(df)
-print(result)
+kit = PharmaBIStarterKit(config={
+    "target_attainment_threshold": 80.0,
+    "top_performers_pct": 20.0,
+})
+
+df = kit.load_data("sample_data/rep_performance.csv")
+kit.validate(df)
+
+report = kit.sales_performance_report(df)
+print(f"Team Attainment: {report['team_attainment_pct']:.1f}%")
+print(f"Top Performers: {report['top_performers']}")
+print(f"Below Target:   {report['below_target']}")
+print(report["rep_summary"][["rep_id", "attainment_pct", "performance_tier", "rank"]])
+
+# Territory view
+territory = kit.territory_heatmap_data(df)
+print(territory[["territory", "territory_attainment_pct", "rep_count"]])
 ```
 
-## Data Format
-
-Expected CSV columns: `metric, value, target, period, product, territory, category`
-
-## Project Structure
-
+## Running Tests
+```bash
+pytest tests/ -v
 ```
-pharma-bi-starter-kit/
-├── src/
-│   ├── main.py          # Core analysis logic
-│   └── data_generator.py # Sample data generator
-├── data/                # Data directory (gitignored for real data)
-├── examples/            # Usage examples
-├── requirements.txt
-└── README.md
-```
-
-## License
-
-MIT License — free to use, modify, and distribute.
-
-## 🚀 New Features (2026-03-02)
-- Add advanced DAX patterns and Power BI governance templates
-- Enhanced error handling and edge case coverage
-- Comprehensive unit tests and integration examples
