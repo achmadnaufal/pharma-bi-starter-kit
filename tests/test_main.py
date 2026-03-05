@@ -98,3 +98,46 @@ class TestTerritoryHeatmap:
     def test_four_territories(self, kit, rep_df):
         result = kit.territory_heatmap_data(rep_df)
         assert len(result) == 4
+
+
+class TestTerritoryPerformanceMatrix:
+    def test_returns_dataframe(self, kit, rep_df):
+        result = kit.territory_performance_matrix(rep_df)
+        assert isinstance(result, pd.DataFrame)
+
+    def test_attainment_column_present(self, kit, rep_df):
+        result = kit.territory_performance_matrix(rep_df)
+        assert "attainment_pct" in result.columns
+
+    def test_quadrant_column_present(self, kit, rep_df):
+        result = kit.territory_performance_matrix(rep_df)
+        assert "quadrant" in result.columns
+
+    def test_valid_quadrants(self, kit, rep_df):
+        result = kit.territory_performance_matrix(rep_df)
+        valid = {"Star", "Underperformer", "Efficient", "At Risk"}
+        assert set(result["quadrant"]).issubset(valid)
+
+    def test_missing_required_cols_raises(self, kit):
+        df = pd.DataFrame({"rep_id": ["R1"], "actual_sales": [100]})
+        with pytest.raises(ValueError, match="Missing columns"):
+            kit.territory_performance_matrix(df)
+
+    def test_opportunity_score_in_range(self, kit, rep_df):
+        result = kit.territory_performance_matrix(rep_df)
+        assert (result["opportunity_score"] >= 0).all()
+
+
+class TestKPISummaryCard:
+    def test_returns_dict(self, kit, rep_df):
+        result = kit.kpi_summary_card(rep_df)
+        assert isinstance(result, dict)
+
+    def test_attainment_is_reasonable(self, kit, rep_df):
+        result = kit.kpi_summary_card(rep_df)
+        assert 0 <= result.get("overall_attainment_pct", 0) <= 200
+
+    def test_reps_on_target_count(self, kit, rep_df):
+        result = kit.kpi_summary_card(rep_df)
+        assert "reps_on_target" in result
+        assert result["reps_on_target"] >= 0

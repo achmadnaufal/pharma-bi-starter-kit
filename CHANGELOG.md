@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-05
+### Added
+- `territory_performance_matrix()`: SFE quadrant analysis (Star/Underperformer/Efficient/At Risk) with opportunity score
+- `kpi_summary_card()`: top-line KPI dict for Power BI card visual or Streamlit metric widget
+- 9 new unit tests covering territory matrix and KPI summary card
+### Improved
+- README updated with territory performance matrix usage and SFE quadrant explanation
+
 ## [1.2.0] - 2026-03-04
 ### Added
 - `sales_performance_report()`: rep attainment %, performance tiers, rank, sales/call efficiency

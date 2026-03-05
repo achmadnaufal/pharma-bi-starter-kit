@@ -43,3 +43,24 @@ print(territory[["territory", "territory_attainment_pct", "rep_count"]])
 ```bash
 pytest tests/ -v
 ```
+
+---
+
+## [v1.3.0] Territory Performance Matrix
+
+SFE quadrant analysis for sales force effectiveness:
+
+```python
+# Build territory performance matrix
+matrix = kit.territory_performance_matrix(rep_df)
+print(matrix[["territory", "attainment_pct", "quadrant", "opportunity_score"]])
+#   territory  attainment_pct  quadrant  opportunity_score
+#       South           110.0      Star              0.841
+#       North            88.5  Efficient              0.712
+#        West            80.0  At Risk               0.523
+
+# Quick KPI summary card for dashboard
+kpis = kit.kpi_summary_card(rep_df)
+# {"total_actual_sales": 685000, "overall_attainment_pct": 87.3,
+#  "reps_on_target": 5, "reps_at_risk": 3, "periods_covered": 1}
+```
