@@ -1,28 +1,18 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+## [1.2.0] - 2026-03-06
 
-## [Unreleased]
-
-## [1.3.0] - 2026-03-05
 ### Added
-- `territory_performance_matrix()`: SFE quadrant analysis (Star/Underperformer/Efficient/At Risk) with opportunity score
-- `kpi_summary_card()`: top-line KPI dict for Power BI card visual or Streamlit metric widget
-- 9 new unit tests covering territory matrix and KPI summary card
+- Add advanced DAX formulas for clinical metrics
+- Enhanced README with getting started guide
+- Comprehensive unit tests for core functions
+- Real-world sample data and fixtures
+
 ### Improved
-- README updated with territory performance matrix usage and SFE quadrant explanation
+- Edge case handling for null/empty inputs
+- Boundary condition validation
 
-## [1.2.0] - 2026-03-04
-### Added
-- `sales_performance_report()`: rep attainment %, performance tiers, rank, sales/call efficiency
-- `territory_heatmap_data()`: territory-level KPI aggregation for heatmap visualization
-- Indonesian pharma sales rep sample data (10 reps, 5 territories)
-- 15 unit tests covering validation, KPI math, territory aggregation
 ### Fixed
-- `validate()` checks for rep_id, actual_sales, and target_sales columns
-- Division-by-zero guard for reps with zero target or call count
-## [1.1.0] - 2026-03-02
-### Added
-- Add advanced DAX patterns and Power BI governance templates
-- Improved unit test coverage
-- Enhanced documentation with realistic examples
+- Various edge cases and corner scenarios
+
+---
