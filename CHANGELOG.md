@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0] - 2026-03-21
+
+### Added
+- **Data Quality Scorer** (`src/data_quality_scorer.py`) — DAMA-DMBOK2-aligned composite DQ scoring
+  - 5 quality dimensions: completeness, validity, uniqueness, timeliness, consistency
+  - Configurable dimension weights (default: completeness 30%, validity 25%, uniqueness 20%, timeliness 15%, consistency 10%)
+  - Wilson-band rating: Excellent (≥90), Good (≥75), Acceptable (≥60), Poor (≥40), Critical (<40)
+  - `score_column()` for lightweight single-column completeness check
+  - Automated recommendations for the lowest-scoring dimensions
+  - `DataQualityReport` and `DimensionScore` dataclasses for structured pipeline output
+- **Sample data** — `sample_data/nsp_quality_sample.csv` with 10 NSP records across brands/geographies
+- **Unit tests** — 21 new tests in `tests/test_data_quality_scorer.py`
+
 ## [CURRENT] - 2026-03-07
 
 ### Added

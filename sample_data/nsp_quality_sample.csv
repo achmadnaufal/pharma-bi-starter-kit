@@ -1,0 +1,11 @@
+period,brand,outlet_id,channel,territory,sales_usd,units_sold,date,data_source
+2025-Q4,Cardio-RX,P-JKT-001,chain,Jakarta,285000,1140,2025-12-15,IQVIA NSP
+2025-Q4,Cardio-RX,P-JKT-002,chain,Jakarta,195000,780,2025-12-15,IQVIA NSP
+2025-Q4,Cardio-RX,P-JKT-003,hospital,Jakarta,520000,2080,2025-12-15,IQVIA NSP
+2025-Q4,Oncobrand-A,P-JKT-001,chain,Jakarta,410000,820,2025-12-15,IQVIA NSP
+2025-Q4,Oncobrand-A,P-JKT-004,independent,Jakarta,88000,176,2025-12-15,IQVIA NSP
+2025-Q4,Cardio-RX,P-SBY-001,chain,Surabaya,175000,700,2025-12-15,IQVIA NSP
+2025-Q4,Cardio-RX,P-SBY-002,hospital,Surabaya,380000,1520,2025-12-15,IQVIA NSP
+2025-Q4,Oncobrand-A,P-SBY-001,chain,Surabaya,290000,580,2025-12-15,IQVIA NSP
+2025-Q4,Cardio-RX,P-BDG-001,independent,Bandung,62000,248,2025-12-15,IQVIA NSP
+2025-Q4,Oncobrand-A,P-BDG-002,chain,Bandung,145000,290,2025-12-15,IQVIA NSP
