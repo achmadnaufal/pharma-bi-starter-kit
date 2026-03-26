@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.5.0] - 2026-03-26
+
+### Added
+- **SalesForceEffectivenessScorer** (`src/sales_force_effectiveness_scorer.py`) — IQVIA-aligned SFE scoring engine
+  - Four specialty benchmarks: Primary Care, Specialty, Hospital, Oncology (IQVIA APAC 2024)
+  - Five weighted dimensions: coverage (25%), frequency (20%), quality (20%), NTB (20%), attainment (15%)
+  - `RepPerformanceRecord` dataclass with computed properties: coverage%, calls/day, calls/prescriber, NTB rate, attainment%
+  - Tier classification: A+ / A / B / C / D with per-tier thresholds
+  - Benchmark comparison against low / median / top-quartile for each dimension
+  - Strengths and coaching priority auto-identification
+  - Actionable coaching recommendations per dimension gap
+  - `score_team()`: batch scoring sorted by composite score descending
+  - `team_summary()`: tier distribution, avg SFE score, coaching count
+  - Custom dimension weight override with validation
+- Unit tests: 12 new tests in `tests/test_sales_force_effectiveness_scorer.py`
+
 ## [1.4.0] - 2026-03-23
 
 ### Added
