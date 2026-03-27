@@ -71,3 +71,20 @@
 - Added comprehensive docstrings to key functions
 - Added error handling for edge cases
 - Improved README with setup and usage examples
+
+## [1.6.0] - 2026-03-27
+
+### Added
+- **Patient Adherence Tracker** (`src/patient_adherence_tracker.py`) — MPR/PDC/persistence analytics from pharmacy claims
+  - `PrescriptionFill` dataclass: patient_id, drug_name, fill_date, days_supply, quantity; computed `end_date` property
+  - `PatientAdherenceTracker` class with configurable observation window (30–730 days), PDC threshold, discontinuation gap
+  - `add_fill()` / `add_fills()` with type validation and batch support
+  - `compute_metrics()`: PDC (Proportion of Days Covered, no overlap credit), MPR (capped at 1.0), adherence tier (adherent/partially_adherent/non_adherent), refill gap analysis, discontinuation flag, persistence days
+  - `population_adherence_summary()`: fleet-level PDC, MPR, discontinuation rate, mean persistence
+  - `at_risk_patients()`: identify patients past refill run-out with risk level (medium/high)
+  - Industry-standard thresholds: PDC ≥ 80% = adherent (ISPOR); gap > 60 days = discontinuation
+- **Unit tests** — 36 new tests in `tests/test_patient_adherence_tracker.py`
+
+### References
+- Nau et al. (2009) J Manag Care Pharm 15(6):S2-10 — MPR vs PDC
+- Peterson et al. (2007) Am J Manag Care 13(3 Suppl):S68-85 — 80% threshold
