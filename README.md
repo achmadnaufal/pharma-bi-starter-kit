@@ -1,329 +1,192 @@
-# pharma-bi-starter-kit
+# 💊 Pharma BI Starter Kit
 
-**Domain:** Pharmaceutical Business Intelligence
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.9%2B-blue?style=flat-square&logo=python" alt="Python 3.9+">
+  <img src="https://img.shields.io/badge/Power%20BI-compatible-F2C811?style=flat-square&logo=powerbi&logoColor=black" alt="Power BI">
+  <img src="https://img.shields.io/badge/SQL%20Server-compatible-CC2927?style=flat-square&logo=microsoftsqlserver&logoColor=white" alt="SQL Server">
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT License">
+  <img src="https://img.shields.io/badge/domain-Pharmaceutical%20BI-9b59b6?style=flat-square" alt="Pharma BI">
+  <img src="https://img.shields.io/badge/methodology-IQVIA%20APAC-orange?style=flat-square" alt="IQVIA">
+  <img src="https://img.shields.io/badge/tests-passing-brightgreen?style=flat-square" alt="Tests">
+</p>
 
-A complete starter kit for pharmaceutical BI teams building dashboards with Power BI and SQL. Includes templates, DAX patterns, and sample datasets for common pharma metrics (sales, market share, clinical trial tracking).
+> A production-ready starter kit for pharmaceutical BI teams building dashboards with Power BI and SQL. Includes DAX templates, T-SQL query patterns, and sample datasets for APAC pharma KPIs — from sales performance to clinical trial tracking. Built around IQVIA SFE methodology.
+
+---
 
 ## 🎯 Features
 
-- **Power BI Templates:** Pre-built measures and calculated columns for pharma KPIs
-- **Advanced DAX Formulas:** YoY growth, market share, trend analysis, variance calculations
-- **Sample Datasets:** Pharma sales, competitive market data, healthcare provider networks
-- **SQL Scripts:** T-SQL queries optimized for pharma data warehouses
-- **Data Governance Framework:** Documentation for metric definitions and calculation rules
+- **Power BI DAX Templates** — Pre-built measures for YoY growth, market share, SFE scoring, and clinical trial enrollment velocity
+- **Sales Force Effectiveness (SFE)** — 5-dimension IQVIA APAC SFE scoring with A+/A/B/C/D tier classification
+- **Patient Adherence Tracking** — MPR, PDC, and persistence analytics aligned with ISPOR standards
+- **T-SQL Query Library** — Optimized queries for pharma data warehouses with Row-Level Security patterns
+- **Veeva CRM Sync Validator** — 5-check data quality validation for CRM freshness, completeness, and duplication
+- **Sample Datasets** — Synthetic pharma sales, HCP networks, competitor pricing, and clinical trial data
+- **Data Governance Framework** — Metric definitions, calculation rules, and data dictionary templates
+- **Row-Level Security (RLS)** — Territory-based access patterns for field sales vs management views
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Power BI Desktop (latest version)
-- SQL Server or Azure SQL Database
-- Excel 2019+ (for data prep)
+- Power BI Desktop (latest)
+- SQL Server 2019+ or Azure SQL Database
+- Python 3.9+ (for Python utility modules)
 
-### Installation
+### Clone & Install
 
 ```bash
-# Clone repository
 git clone https://github.com/achmadnaufal/pharma-bi-starter-kit.git
 cd pharma-bi-starter-kit
-
-# Copy Power BI template to your workspace
-cp templates/pharma-dashboard-template.pbit ~/Documents/Power\ BI\ Dashboards/
+pip install -r requirements.txt
 ```
 
-### Load Sample Data
+### Load Sample Data (SQL Server)
 
 ```sql
--- SQL Server: Load sample sales data
-USE [YourPharmacyAnalyticsDB]
+USE [PharmaBIDemo]
 GO
 
 -- Create staging table
 CREATE TABLE staging.pharma_sales (
-    sale_id INT PRIMARY KEY,
-    product_name NVARCHAR(100),
+    sale_id       INT PRIMARY KEY,
+    product_name  NVARCHAR(100),
     therapeutic_area NVARCHAR(50),
-    sale_date DATE,
-    sale_amount DECIMAL(12,2),
-    units_sold INT,
-    healthcare_provider_id INT,
-    region NVARCHAR(50)
-)
+    sale_date     DATE,
+    sale_amount   DECIMAL(12,2),
+    units_sold    INT,
+    hcp_id        INT,
+    region        NVARCHAR(50)
+);
 
 -- Load sample data
-INSERT INTO staging.pharma_sales VALUES
-    (1, 'Lisinopril 10mg', 'Cardiovascular', '2026-03-01', 4500.00, 150, 101, 'North'),
-    (2, 'Metformin 500mg', 'Endocrinology', '2026-03-01', 3200.00, 200, 102, 'South'),
-    (3, 'Omeprazole 20mg', 'Gastroenterology', '2026-03-02', 2800.00, 140, 103, 'East'),
-    (4, 'Atorvastatin 20mg', 'Cardiovascular', '2026-03-02', 5100.00, 170, 104, 'West');
+BULK INSERT staging.pharma_sales
+FROM 'sample_data/sample-sales-data.csv'
+WITH (FORMAT = 'CSV', FIRSTROW = 2);
 ```
 
-## 📊 Power BI Setup
-
-### Step 1: Create Data Model
-
-```
-1. Open pharma-dashboard-template.pbit in Power BI Desktop
-2. Get Data → SQL Server
-3. Connect to your pharma database
-4. Select tables: pharma_sales, products, healthcare_providers, competitors
-5. Apply transformations in Power Query
-```
-
-### Step 2: DAX Measure Examples
-
-**Total Sales:**
-```dax
-Sales_Total = SUM(Sales[sale_amount])
-```
-
-**Year-over-Year Growth:**
-```dax
-Sales_YoY_Growth = 
-VAR CurrentYear = YEAR(TODAY())
-VAR PreviousYear = CurrentYear - 1
-VAR CurrentSales = 
-    CALCULATE(
-        SUM(Sales[sale_amount]),
-        YEAR(Sales[sale_date]) = CurrentYear
-    )
-VAR PreviousSales = 
-    CALCULATE(
-        SUM(Sales[sale_amount]),
-        YEAR(Sales[sale_date]) = PreviousYear
-    )
-RETURN
-    DIVIDE(CurrentSales - PreviousSales, PreviousSales, 0)
-```
-
-**Market Share by Therapeutic Area:**
-```dax
-Market_Share_Pct = 
-VAR TotalMarket = CALCULATE(
-    SUM(Sales[sale_amount]),
-    ALL(Sales[product_name])
-)
-VAR OurSales = SUM(Sales[sale_amount])
-RETURN
-    DIVIDE(OurSales, TotalMarket, 0)
-```
-
-**Clinical Trial Enrollment Pace:**
-```dax
-Enrollment_Pace = 
-VAR DaysElapsed = TODAY() - MIN(Trials[start_date])
-VAR TotalEnrolled = SUM(Trials[enrolled_patients])
-RETURN
-    DIVIDE(TotalEnrolled, DaysElapsed, 0)  -- Patients per day
-```
-
-### Step 3: Create Visualizations
-
-**Dashboard Components:**
-
-1. **KPI Cards**
-   - Total Sales (MTD)
-   - Market Share %
-   - Active Products
-   - Clinical Trials in Progress
-
-2. **Trend Line**
-   - Sales by Month (last 12 months)
-   - Competitor Trending
-   - Market Share Trend
-
-3. **Heat Map**
-   - Sales by Therapeutic Area × Region
-   - Product Performance Matrix
-
-4. **Bar Chart**
-   - Top 10 Products by Sales
-   - Healthcare Provider Rankings
-   - Competitive Pricing Analysis
-
-## 📈 Sample Report Scenarios
-
-### Scenario 1: Daily Sales Briefing
-
-```
-Parameters: Today's date, Region filter
-Visuals:
-- YTD Sales vs Target (gauge)
-- Top Products (bar)
-- Regional Breakdown (pie)
-- Variance Analysis (table)
-```
-
-### Scenario 2: Quarterly Business Review
-
-```
-Time Slice: Last 3 months
-Metrics:
-- Sales Growth vs Prior Quarter (YoY)
-- Market Share by Therapeutic Area
-- Competitive Win/Loss Analysis
-- Pipeline Opportunities
-```
-
-### Scenario 3: Clinical Trial Dashboard
-
-```
-Filters: Trial Phase, Indication, Geography
-Metrics:
-- Total Enrolled vs Plan
-- Enrollment Velocity (patients/day)
-- Site Activation Rate
-- Screen Failure Rate
-```
-
-## 🧪 Testing DAX Measures
-
-```sql
--- Test YoY Growth calculation
-WITH sales_by_year AS (
-    SELECT 
-        YEAR(sale_date) as sale_year,
-        SUM(sale_amount) as annual_sales
-    FROM pharma_sales
-    GROUP BY YEAR(sale_date)
-)
-SELECT 
-    sale_year,
-    annual_sales,
-    LAG(annual_sales) OVER (ORDER BY sale_year) as prev_year_sales,
-    ROUND(
-        (annual_sales - LAG(annual_sales) OVER (ORDER BY sale_year)) / 
-        LAG(annual_sales) OVER (ORDER BY sale_year) * 100, 2
-    ) as yoy_growth_pct
-FROM sales_by_year
-```
-
-## 📊 Data Model Relationships
-
-```
-Relationships:
-├── pharma_sales
-│   ├── → products (product_id)
-│   ├── → healthcare_providers (provider_id)
-│   └── → calendar (sale_date)
-├── products
-│   ├── → therapeutic_areas (area_id)
-│   └── → competitors (competitor_id)
-└── clinical_trials
-    ├── → products (product_id)
-    └── → trial_sites (site_id)
-```
-
-## 🔒 Row-Level Security (RLS)
-
-Restrict data by sales territory:
+### Key DAX Measures
 
 ```dax
-[Sales Manager Role]
-Region = "North"
+-- Year-over-Year Sales Growth
+Sales_YoY_Growth =
+VAR CurrentSales = CALCULATE(SUM(Sales[sale_amount]),
+    YEAR(Sales[sale_date]) = YEAR(TODAY()))
+VAR PriorSales = CALCULATE(SUM(Sales[sale_amount]),
+    YEAR(Sales[sale_date]) = YEAR(TODAY()) - 1)
+RETURN DIVIDE(CurrentSales - PriorSales, PriorSales, 0)
 
-[Field Sales Rep Role]
-Region = "North" AND 
-HealthcareProvider = "Assigned Territory"
+-- Market Share by Therapeutic Area
+Market_Share_Pct =
+DIVIDE(SUM(Sales[sale_amount]),
+    CALCULATE(SUM(Sales[sale_amount]), ALL(Sales[product_name])), 0)
+
+-- SFE Call Quality Index
+SFE_Call_Quality =
+DIVIDE([Effective_Calls], [Total_Calls], 0) * 100
 ```
 
-## 📁 File Structure
+---
+
+## 📐 Architecture
+
+```mermaid
+graph TD
+    A[📥 Data Sources\nSQL Server / Azure SQL\nVeeva CRM Export\nExcel / CSV] --> B[Power Query ETL\nData cleansing &\ntransformation]
+    B --> C[Star Schema\nFact: Sales, Trials, Calls\nDim: Products, HCPs,\nCalendar, Regions]
+    C --> D[DAX Measure Layer\nKPIs, YoY, SFE Score,\nMarket Share, MPR/PDC]
+    D --> E[Power BI Report Layer\nKPI Cards · Trend Lines\nHeat Maps · Rankings]
+    E --> F[Row-Level Security\nTerritory · Region · Role]
+    F --> G[📊 Dashboards\nSales Scorecard\nSFE Dashboard\nClinical Trials\nMarket Analysis]
+
+    H[VeevaCRMSyncValidator\nPython] --> B
+    I[PatientAdherenceTracker\nPython MPR/PDC] --> D
+
+    style A fill:#9b59b6,color:#fff
+    style G fill:#F2C811,color:#333
+    style C fill:#0366d6,color:#fff
+```
+
+---
+
+## 📊 Demo
+
+See [`demo/sample_output.txt`](demo/sample_output.txt) for a full Q1 2026 APAC scorecard with sales rankings, SFE scoring, and regional breakdown.
+
+```
+📊 KPI SCORECARD — CARDIOVASCULAR PORTFOLIO (Q1 2026)
+  Total Sales (USD)    : $4,218,500    ✅ vs $4,000,000 target (+5.5%)
+  Market Share %       : 18.4%         ✅ vs 17.0% target (+1.4pp)
+  YoY Growth           : +12.3%        ✅ vs +10.0% target
+  SFE Score            : 78.2 / 100   ✅ Grade A (IQVIA benchmark)
+
+  🏆 Top Product: Atorvastatin 20mg — $890,400 | +14.2% YoY
+```
+
+---
+
+## 📂 Project Structure
 
 ```
 pharma-bi-starter-kit/
-├── templates/
-│   ├── pharma-dashboard-template.pbit
-│   ├── sales-scorecard.pbit
-│   └── market-analysis.pbit
+├── src/
+│   ├── sfe_scorer.py            # IQVIA 5-dimension SFE scoring
+│   ├── patient_adherence.py     # MPR / PDC / persistence analytics
+│   ├── veeva_validator.py       # CRM data quality checks
+│   └── market_share.py          # Competitive market share utils
 ├── data/
 │   ├── sample-sales-data.csv
 │   ├── competitors-data.xlsx
 │   └── clinical-trials.xlsx
-├── sql/
-│   ├── schema-setup.sql
-│   ├── etl-procedures.sql
-│   └── sample-queries.sql
-├── tests/
-│   ├── test_main.py
-│   └── test_dax_measures.py
-├── docs/
-│   ├── metric-definitions.md
-│   ├── governance-framework.md
-│   └── best-practices.md
-└── README.md
+├── examples/                    # End-to-end usage examples
+├── sample_data/                 # Synthetic pharma datasets
+├── tests/                       # pytest unit tests
+├── requirements.txt
+├── CHANGELOG.md
+└── CONTRIBUTING.md
 ```
+
+---
+
+## 🔧 Key Modules
+
+| Module | Description |
+|--------|-------------|
+| `SalesForceEffectivenessScorer` | 5-dimension IQVIA SFE scoring: call quality, frequency, coverage, conversion, reach |
+| `PatientAdherenceTracker` | MPR, PDC, and treatment persistence analytics |
+| `VeevaCRMSyncValidator` | 5-check quality validator: completeness, freshness, duplicates, frequency, sample accuracy |
+| DAX Templates | 15+ measures: YoY, market share, enrollment velocity, COGS %, RLS patterns |
+| SQL Scripts | Schema setup, ETL procedures, window function examples, territory queries |
+
+---
+
+## 📈 Supported KPIs
+
+| KPI | Formula | Standard |
+|-----|---------|---------|
+| YoY Sales Growth | (Current - Prior) / Prior | Internal |
+| Market Share % | Our Sales / Total Market | IMS/IQVIA |
+| SFE Score | Weighted 5-dimension index | IQVIA APAC |
+| MPR (Medication Possession Ratio) | Days Supply / Days in Period | ISPOR |
+| PDC (Proportion of Days Covered) | Days Covered / Observation Period | ISPOR |
+| Enrollment Velocity | Patients Enrolled / Days Elapsed | ICH E6 |
+
+---
 
 ## 🧪 Testing
 
-Run unit tests for DAX calculations:
-
 ```bash
-python -m pytest tests/test_dax_measures.py -v
+pytest tests/ -v
 ```
 
-## 💾 Loading Your Own Data
-
-### Option 1: Direct SQL Queries
-
-```python
-import pyodbc
-
-conn = pyodbc.connect(
-    'Driver={ODBC Driver 17 for SQL Server};'
-    'Server=your-server;'
-    'Database=pharma_db;'
-    'UID=sa;PWD=password'
-)
-
-query = "SELECT * FROM pharma_sales WHERE sale_date >= '2026-01-01'"
-df = pd.read_sql(query, conn)
-```
-
-### Option 2: Power Query M Language
-
-```m
-let
-    Source = Sql.Database("server-name", "pharma_db"),
-    DboPharmaSales = Source{[Schema="dbo",Item="pharma_sales"]}[Data],
-    FilteredData = Table.SelectRows(
-        DboPharmaSales, 
-        each [sale_date] >= #date(2026,1,1)
-    )
-in
-    FilteredData
-```
-
-## 📚 Common Pharma KPIs
-
-- **COGS %** = Cost of Goods Sold / Total Sales
-- **Gross Margin** = (Revenue - COGS) / Revenue
-- **Pipeline Value** = Sum of opportunity values in sales pipeline
-- **Net Price Growth** = (Current Price - Prior Year Price) / Prior Year Price
-- **Market Penetration** = Our Sales / Total Market Sales
-
-## 🔄 Update Schedule
-
-- Sample data refreshes: Monthly
-- Dashboard scheduled refresh: Daily 6 AM UTC
-- Competitive data: Weekly
-- Clinical trial milestones: As submitted
-
-## 📞 Support
-
-For configuration help:
-- Check `docs/best-practices.md` for DAX patterns
-- Review sample queries in `sql/` folder
-- See `docs/metric-definitions.md` for KPI documentation
+---
 
 ## 📄 License
 
-MIT License
+MIT License — see [LICENSE](LICENSE)
 
-## Changelog
+---
 
-See [CHANGELOG.md](CHANGELOG.md) for recent improvements and additions.
-
-
-## Usage Examples
-
-Refer to the `tests/` directory for comprehensive example implementations.
+> Built by [Achmad Naufal](https://github.com/achmadnaufal) | Lead Data Analyst | Power BI · SQL · Python · GIS
