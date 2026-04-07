@@ -1,0 +1,21 @@
+hcp_id,specialty,region,patient_volume,current_share_pct,potential_share_pct,last_activity_days,engagement_score,call_cost_usd
+H001,Oncology,Jakarta,300,10.0,35.0,30,7.5,150
+H002,Cardiology,Jawa Barat,200,15.0,40.0,45,6.5,120
+H003,Diabetes,Bangkok,150,20.0,28.0,10,5.0,120
+H004,Cardiology,Jawa Timur,50,18.0,22.0,90,3.0,120
+H005,Oncology,Ho Chi Minh,500,5.0,30.0,20,8.0,180
+H006,Cardiology,Jakarta,400,12.0,38.0,15,7.0,150
+H007,Diabetes,Ho Chi Minh,180,22.0,32.0,60,4.5,120
+H008,Oncology,Bangkok,250,8.0,25.0,75,5.5,160
+H009,Cardiology,Ho Chi Minh,350,10.0,42.0,20,7.8,140
+H010,Diabetes,Jawa Barat,120,25.0,30.0,5,6.0,120
+H011,Cardiology,Bangkok,280,14.0,36.0,30,6.8,130
+H012,Oncology,Jawa Timur,380,7.0,28.0,50,5.2,170
+H013,Diabetes,Jakarta,200,18.0,26.0,10,5.8,120
+H014,Cardiology,Ho Chi Minh,450,11.0,39.0,8,8.2,145
+H015,Oncology,Jawa Barat,320,9.0,33.0,40,6.3,155
+H016,Diabetes,Bangkok,160,21.0,29.0,25,4.8,120
+H017,Cardiology,Jawa Timur,100,16.0,24.0,70,3.5,120
+H018,Oncology,Jakarta,420,6.0,31.0,15,7.6,175
+H019,Diabetes,Jawa Barat,140,23.0,31.0,3,6.2,120
+H020,Cardiology,Bangkok,310,13.0,37.0,22,7.1,135

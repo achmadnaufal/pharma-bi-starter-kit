@@ -16,8 +16,9 @@
 
 ## 🎯 Features
 
-- **Power BI DAX Templates** — Pre-built measures for YoY growth, market share, SFE scoring, and clinical trial enrollment velocity
+- **HCP Targeting Optimizer** — LP-based call frequency optimization across HCP segments with scipy.optimize (IQVIA SFE methodology)
 - **Sales Force Effectiveness (SFE)** — 5-dimension IQVIA APAC SFE scoring with A+/A/B/C/D tier classification
+- **Power BI DAX Templates** — Pre-built measures for YoY growth, market share, SFE scoring, and clinical trial enrollment velocity
 - **Patient Adherence Tracking** — MPR, PDC, and persistence analytics aligned with ISPOR standards
 - **T-SQL Query Library** — Optimized queries for pharma data warehouses with Row-Level Security patterns
 - **Veeva CRM Sync Validator** — 5-check data quality validation for CRM freshness, completeness, and duplication
@@ -154,6 +155,7 @@ pharma-bi-starter-kit/
 
 | Module | Description |
 |--------|-------------|
+| `HCPTargetingOptimizer` | LP-based call planning: HCP segmentation, ROI analysis, territory balancing, next-best-action |
 | `SalesForceEffectivenessScorer` | 5-dimension IQVIA SFE scoring: call quality, frequency, coverage, conversion, reach |
 | `PatientAdherenceTracker` | MPR, PDC, and treatment persistence analytics |
 | `VeevaCRMSyncValidator` | 5-check quality validator: completeness, freshness, duplicates, frequency, sample accuracy |
@@ -176,6 +178,27 @@ pharma-bi-starter-kit/
 ---
 
 ## 🧪 Testing
+
+### Python Usage (HCP Targeting Optimizer)
+
+```python
+from src.hcp_targeting import HCPTargetingOptimizer, HCPProfile
+
+optimizer = HCPTargetingOptimizer(total_call_capacity=200)
+profiles = [
+    HCPProfile(hcp_id="H001", specialty="Cardiology", region="Jawa Barat",
+               patient_volume=200, current_share=15.0, potential_share=40.0,
+               last_activity_days_ago=45, engagement_score=6.5, call_cost_usd=120),
+    HCPProfile(hcp_id="H002", specialty="Cardiology", region="Jawa Barat",
+               patient_volume=350, current_share=8.0, potential_share=35.0,
+               last_activity_days_ago=60, engagement_score=4.2, call_cost_usd=120),
+]
+segments = optimizer.segment_hcps(profiles)
+allocation = optimizer.optimize_reach(profiles, total_calls=200)
+roi = optimizer.calculate_roi_per_segment(profiles)
+action = optimizer.next_best_action(profiles[0])
+print(f"Allocation: {allocation}")
+```
 
 ```bash
 pytest tests/ -v

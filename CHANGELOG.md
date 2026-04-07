@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.11.0] - 2026-04-14
+
+### Added
+- **HCP Targeting Optimizer** (`src/hcp_targeting.py`)
+  - `HCPTargetingOptimizer`: LP-based call frequency optimization across HCP segments
+  - `segment_hcps()`: high/medium/low potential segmentation by volume + potential
+  - `optimize_reach()`: scipy LP to maximize Rx lift given call capacity constraints
+  - `calculate_roi_per_segment()`: call cost vs expected revenue per segment
+  - `territory_balancer()`: balanced rep workload across HCP potential tiers
+  - `next_best_action()`: next-best-action recommendations (detail/sample/trial/CME)
+  - `HCPProfile` dataclass: specialty, region, volume, share, engagement data
+- **Unit tests** — 30+ tests in `tests/test_hcp_targeting.py`
+- **Sample data** — `sample_data/hcp_profiles.csv` (20 HCPs across oncology/CV/diabetes)
+
+### References
+- IQVIA APAC SFE Methodology (2023)
+- Veeva CRM Segmentation best practices
+- ISPOR Healthcare Decision Modelling Guidelines
+
 ## [1.5.0] - 2026-03-26
 
 ### Added
