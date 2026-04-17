@@ -1,0 +1,16 @@
+hcp_id,territory,rx_count,calls,samples,tier
+H001,Jakarta-West,184,12,30,A
+H002,Jakarta-East,142,10,24,B
+H003,Bandung,201,14,36,A
+H004,Surabaya,96,6,18,C
+H005,Bali,158,11,28,B
+H006,Medan,78,5,12,D
+H007,Makassar,133,9,22,B
+H008,Semarang,167,11,26,A
+H009,Yogyakarta,112,8,20,C
+H010,Palembang,89,6,14,D
+H011,Manila,175,12,30,A
+H012,Bangkok,212,15,38,A
+H013,Ho-Chi-Minh,128,9,22,B
+H014,Kuala-Lumpur,155,10,24,B
+H015,Singapore,198,13,32,A

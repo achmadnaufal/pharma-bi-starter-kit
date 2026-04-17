@@ -2,7 +2,10 @@ data/*.csv
 data/*.xlsx
 __pycache__/
 *.pyc
-.env
 *.egg-info/
+.venv/
+.env
+.DS_Store
 dist/
 build/
+.pytest_cache/
